@@ -1,1 +1,1 @@
-python lian.py
+worker: python lian.py
