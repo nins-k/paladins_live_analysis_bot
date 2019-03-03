@@ -325,7 +325,7 @@ async def on_message(message):
         wins = paladins.getWinRate(player_id=player_name, last_matches_count=matches_count)
         rate = str(round(wins/matches_count*100, 4))
 		
-        await client.send_message(message.channel, "```{} won {} of the last {} matches with a win rate of {}%```".format(
+        await client.send_message(message.channel, "```Player {} won {} of the last {} matches with a win rate of {}%```".format(
 		player_name, wins, matches_count, rate))
 		
 @client.event
