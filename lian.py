@@ -216,6 +216,35 @@ class PaladinsClient:
 
         return sum(history_data.iloc[:last_matches_count,:].Win_Status=='Win')
 
+    def getLastMatchData(self, player_id):
+
+        def getKDAString(row):
+            return "{}/{}/{}".format(row['Kills_Player'], row['Deaths'], row['Assists'])
+            
+        history_data = self.getMatchHistory(player_id=player_id)
+        last_match_id = (history_data['Match'])[0]
+        match_data = self.getMatchDetails(last_match_id)
+        
+        match_data['KDA'] = match_data.apply(lambda row: getKDAString(row), axis=1)
+
+        player_row = match_data.loc[match_data['playerName'] == player_id]
+        match_data.loc[match_data['playerName'] == player_id, 'Reference_Name'] = "*" + player_row['Reference_Name']
+        
+        required_data = match_data.sort_values('Win_Status', ascending=False)[[
+            'playerName', 'Reference_Name', 'Damage_Player', 'Damage_Taken', \
+            'Damage_Mitigated', 'Healing', 'KDA', 'PartyId']]
+        
+        u = sorted(required_data.PartyId.unique())
+        map_dict = {}
+        for index, i in enumerate(u):
+            map_dict.update({i : "Party {}".format(index + 1)})
+        required_data['PartyId'] = required_data['PartyId'].map(map_dict)
+        
+        required_data = required_data.transpose()
+
+        return required_data
+
+    
     def getCurrent(self, player_id):
         
         player_status = self.getPlayerStatus(player_id)
@@ -243,23 +272,29 @@ class PaladinsClient:
         match_data.to_csv("{}.csv".format((self.getTimeStamp())))
     
 	
-TOKEN = os.environ['TOKEN']
+# TOKEN = os.environ['TOKEN']
+
+# client = discord.Client()
+# dev_id = str(os.environ['dev_id'])
+# auth_key = os.environ['auth_key']
+    
+TOKEN = 'NTI0NjUxODUzODg0MDMxMDA1.DvrNow.keCGf4G1SOPc4fEf6U6QUsJwoKw'
 
 client = discord.Client()
-dev_id = str(os.environ['dev_id'])
-auth_key = os.environ['auth_key']
+dev_id = "2557"
+auth_key = "E9A6FA1D226C45B1AAF8321822937182"
 
 paladins = PaladinsClient(dev_id, auth_key)
 
-def format_data(df):
+def format_data(df, width=4):
     
-    width = 4
     str_list = []
-    
+
     for i in range(df.shape[0]):
         cur_row = []
-        for j in range(7):
+        for j in range(df.shape[1]):
             if j==0:
+                print(i,j)
                 cur_row.append(str(df.iloc[i][j]).ljust(15))
             elif j==1:
                 cur_row.append(str(df.iloc[i][j]).ljust(10))
@@ -271,6 +306,52 @@ def format_data(df):
     str_list = "\n".join(str_list)
     
     return str_list
+
+def format_data2(df, width=15):
+    
+    df.insert(0, "Property", ["Player", "Champion", "Damage", "Taken", "Shielding", "Healing", "KDA", "Party"])
+    df.insert(6, "Property", ["Player", "Champion", "Damage", "Taken", "Shielding", "Healing", "KDA", "Party"], 
+          allow_duplicates=True)
+
+    str_list1 = []
+    str_list2 = []
+    
+    # Loop through all rows except top row which contains player names
+    for i in range(1, df.shape[0]):
+        
+        # Loop through columns 0 - 5 [field names + 5 players]
+        cur_row1 = []
+        for j in range(0, 6):
+            if j==0:
+                cur_row1.append(str(df.iloc[i, j]).ljust(10))
+            else:
+                cur_row1.append(str(df.iloc[i, j]).center(width))
+        cur_row1 = " | ".join(cur_row1)
+        str_list1.append(cur_row1)
+        
+        # Loop through columns 6 - 11 [field names + 5 players]
+        cur_row2 = []
+        for j in range(6, 12):
+            if j==6:
+                cur_row2.append(str(df.iloc[i, j]).ljust(10))
+            else:
+                cur_row2.append(str(df.iloc[i, j]).center(width))
+        cur_row2 = " | ".join(cur_row2)
+        str_list2.append(cur_row2)
+        
+    str_list1 = "\n".join(str_list1)
+    str_list2 = "\n".join(str_list2)
+    
+    
+    # Prepare headers with player names
+    cols_list = list(df.iloc[0,:])
+    col_str1 = " | ".join([ele.center(15) for ele in cols_list[1:6]])
+    col_str1 = " | ".join([cols_list[0].ljust(10), col_str1])
+    col_str2 = " | ".join([ele.center(15) for ele in cols_list[7:]])
+    col_str2 = " | ".join([cols_list[6].ljust(10), col_str2])
+
+    return col_str1, str_list1, col_str2, str_list2
+
 
 @client.event
 async def on_message(message):
@@ -300,7 +381,6 @@ async def on_message(message):
             queue_id = data['Queue'][0]
             
             d1 = paladins.getAllData(team1_info, queue_id)
-            # d2 = paladins.getAllData(team2_info, queue_id)
 
             width=4
             cols_list = list(d1.columns)
@@ -310,12 +390,12 @@ async def on_message(message):
 			
             await client.send_message(message.channel, "```" + col_str + "```")
 			# await client.send_message(message.channel, "\n{}".format("-"*80))
-            await client.send_message(message.channel, "```" + format_data(d1) + "```")
+            await client.send_message(message.channel, "```python" + format_data(d1) + "```")
 			# await client.send_message(message.channel, "\n{}".format("-"*80))
             d2 = paladins.getAllData(team2_info, queue_id)
-            await client.send_message(message.channel, "```" + format_data(d2) + "```")
+            await client.send_message(message.channel, "```python" + format_data(d2) + "```")
 	
-    elif message.content.startswith('!last'):
+    elif message.content.startswith('!wins'):
         msg = message.content.split(" ")
         player_name = msg[1]
         if len(msg)==2:
@@ -325,8 +405,22 @@ async def on_message(message):
         wins = paladins.getWinRate(player_id=player_name, last_matches_count=matches_count)
         rate = str(round(wins/matches_count*100, 2))
 		
-        await client.send_message(message.channel, "```Player {} won {} of the last {} matches with a win rate of {}%```".format(
+        await client.send_message(message.channel, "```python Player {} won {} of the last {} matches with a win rate of {}%```".format(
 		player_name, wins, matches_count, rate))
+
+    elif message.content.startswith('!last'):
+        msg = message.content.split(" ")
+        player_name = msg[1]
+        
+        data = paladins.getLastMatchData(player_id=player_name)
+        team1_names, team1_data, team2_names, team2_data = format_data2(data, width=8)
+        
+        # await client.send_message(message.channel, "```" + team1_names + "```")
+        await client.send_message(message.channel, "```python\n" + team1_data + "\n```")
+        
+        # await client.send_message(message.channel, "```" + team2_names + "```")
+        await client.send_message(message.channel, "```python\n" + team2_data + "\n```")
+        
 		
 @client.event
 async def on_ready():
