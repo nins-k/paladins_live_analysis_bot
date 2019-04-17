@@ -390,10 +390,10 @@ async def on_message(message):
 			
             await client.send_message(message.channel, "```" + col_str + "```")
 			# await client.send_message(message.channel, "\n{}".format("-"*80))
-            await client.send_message(message.channel, "```python" + format_data(d1) + "```")
+            await client.send_message(message.channel, "```python\n" + format_data(d1) + "\n```")
 			# await client.send_message(message.channel, "\n{}".format("-"*80))
             d2 = paladins.getAllData(team2_info, queue_id)
-            await client.send_message(message.channel, "```python" + format_data(d2) + "```")
+            await client.send_message(message.channel, "```python\n" + format_data(d2) + "\n```")
 	
     elif message.content.startswith('!wins'):
         msg = message.content.split(" ")
