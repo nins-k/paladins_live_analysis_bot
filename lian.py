@@ -214,7 +214,7 @@ class PaladinsClient:
         
         history_data = self.getMatchHistory(player_id=player_id)
 
-        return sum(history_data.iloc[:last_matches_count,:].Win_Status=='Win')
+        return sum(history_data.iloc[:last_matches_count,:].Win_Status=='Win'), history_data.shape[0]
 
     def getLastMatchData(self, player_id):
 
@@ -402,7 +402,7 @@ async def on_message(message):
             matches_count = 50
         else:
             matches_count = min(50, int(msg[2]))
-        wins = paladins.getWinRate(player_id=player_name, last_matches_count=matches_count)
+        wins, matches_count = paladins.getWinRate(player_id=player_name, last_matches_count=matches_count)
         rate = str(round(wins/matches_count*100, 2))
 		
         await client.send_message(message.channel, "```python\n Player {} won {} of the last {} matches with a win rate of {}%```".format(
@@ -416,10 +416,10 @@ async def on_message(message):
         team1_names, team1_data, team2_names, team2_data = format_data2(data, width=8)
         
         # await client.send_message(message.channel, "```" + team1_names + "```")
-        await client.send_message(message.channel, "```python\n" + team1_data + "\n```")
+        await client.send_message(message.channel, "```\n" + team1_data + "\n```")
         
         # await client.send_message(message.channel, "```" + team2_names + "```")
-        await client.send_message(message.channel, "```python\n" + team2_data + "\n```")
+        await client.send_message(message.channel, "```\n" + team2_data + "\n```")
         
 		
 @client.event
