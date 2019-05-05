@@ -213,8 +213,9 @@ class PaladinsClient:
     def getWinRate(self, player_id, last_matches_count=50):
         
         history_data = self.getMatchHistory(player_id=player_id)
+        selected_data = history_data.iloc[:last_matches_count,:]
 
-        return sum(history_data.iloc[:last_matches_count,:].Win_Status=='Win'), history_data.shape[0]
+        return sum(selected_data.Win_Status=='Win'), selected_data.shape[0]
 
     def getLastMatchData(self, player_id):
 
