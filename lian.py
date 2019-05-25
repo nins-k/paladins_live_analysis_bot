@@ -273,17 +273,10 @@ class PaladinsClient:
         match_data.to_csv("{}.csv".format((self.getTimeStamp())))
     
 	
-# TOKEN = os.environ['TOKEN']
-
-# client = discord.Client()
-# dev_id = str(os.environ['dev_id'])
-# auth_key = os.environ['auth_key']
-    
-TOKEN = 'NTI0NjUxODUzODg0MDMxMDA1.DvrNow.keCGf4G1SOPc4fEf6U6QUsJwoKw'
-
+TOKEN = os.environ['TOKEN']
 client = discord.Client()
-dev_id = "2557"
-auth_key = "E9A6FA1D226C45B1AAF8321822937182"
+dev_id = str(os.environ['dev_id'])
+auth_key = os.environ['auth_key']
 
 paladins = PaladinsClient(dev_id, auth_key)
 
