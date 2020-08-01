@@ -350,12 +350,13 @@ def format_data2(df, width=15):
 @client.event
 async def on_message(message):
     # we do not want the bot to reply to itself
+    channel = message.channel
     if message.author == client.user:
         return
 
     if message.content.startswith('!hello'):
         msg = 'Hello {0.author.mention}'.format(message)
-        await client.send_message(message.channel, msg)
+        await channel.send(msg)
 
     elif message.content.startswith('!current'):
         msg = message.content.split(" ")
@@ -364,7 +365,7 @@ async def on_message(message):
         print("\n\n\n--------------------------------------------\n")
         player_status = paladins.getPlayerStatus(player_name)
         if player_status['status'][0] != 3:
-            await client.send_message(message.channel, "Could not get live match information for {}".format(player_name))
+            await channel.send("Could not get live match information for {}".format(player_name))
         else:
             live_match_id = player_status['Match'][0]
             data = paladins.getMatchPlayerDetails(live_match_id)
@@ -382,12 +383,12 @@ async def on_message(message):
 			
             col_str = " | ".join([cols_list[0].ljust(15), cols_list[1].ljust(10), col_str])
 			
-            await client.send_message(message.channel, "```" + col_str + "```")
+            await channel.send("```" + col_str + "```")
 			# await client.send_message(message.channel, "\n{}".format("-"*80))
-            await client.send_message(message.channel, "```python\n" + format_data(d1) + "\n```")
+            await channel.send( "```python\n" + format_data(d1) + "\n```")
 			# await client.send_message(message.channel, "\n{}".format("-"*80))
             d2 = paladins.getAllData(team2_info, queue_id)
-            await client.send_message(message.channel, "```python\n" + format_data(d2) + "\n```")
+            await channel.send("```python\n" + format_data(d2) + "\n```")
 	
     elif message.content.startswith('!wins'):
         msg = message.content.split(" ")
@@ -399,7 +400,7 @@ async def on_message(message):
         wins, matches_count = paladins.getWinRate(player_id=player_name, last_matches_count=matches_count)
         rate = str(round(wins/matches_count*100, 2))
 		
-        await client.send_message(message.channel, "```python\n Player {} won {} of the last {} matches with a win rate of {}%```".format(
+        await channel.send("```python\n Player {} won {} of the last {} matches with a win rate of {}%```".format(
 		player_name, wins, matches_count, rate))
 
     elif message.content.startswith('!last'):
@@ -410,10 +411,10 @@ async def on_message(message):
         team1_names, team1_data, team2_names, team2_data = format_data2(data, width=8)
         
         # await client.send_message(message.channel, "```" + team1_names + "```")
-        await client.send_message(message.channel, "```\n" + team1_data + "\n```")
+        await channel.send("```\n" + team1_data + "\n```")
         
         # await client.send_message(message.channel, "```" + team2_names + "```")
-        await client.send_message(message.channel, "```\n" + team2_data + "\n```")
+        await channel.send( "```\n" + team2_data + "\n```")
         
 		
 @client.event
