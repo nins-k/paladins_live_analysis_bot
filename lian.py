@@ -16,7 +16,7 @@ class PaladinsClient:
         self.dev_id = dev_id
         self.auth_key = auth_key
         
-        self.base_endpoint = "http://api.paladins.com/paladinsapi.svc"
+        self.base_endpoint = "https://api.paladins.com/paladinsapi.svc"
         self.response_format = "Json"
         
         self.session_id = None
